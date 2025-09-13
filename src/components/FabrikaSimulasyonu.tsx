@@ -1,12 +1,40 @@
 "use client";
 
-import { Canvas, extend } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Text, Box, Cylinder, Sphere } from "@react-three/drei";
 import { useRef, useState, useEffect } from "react";
 import { Mesh, AmbientLight, DirectionalLight } from "three";
 
-// Three.js light öğelerini extend et
-extend({ AmbientLight, DirectionalLight });
+// Işıklandırma bileşeni - Three.js lights'ı sahneye ekler
+function Lighting() {
+  const { scene } = useThree();
+  
+  useEffect(() => {
+    // Ambient light - genel aydınlatma
+    const ambientLight = new AmbientLight(0xffffff, 0.3);
+    scene.add(ambientLight);
+    
+    // Directional light 1 - ana ışık kaynağı
+    const directionalLight1 = new DirectionalLight(0xffffff, 1.2);
+    directionalLight1.position.set(20, 20, 10);
+    directionalLight1.castShadow = true;
+    scene.add(directionalLight1);
+    
+    // Directional light 2 - ikincil ışık
+    const directionalLight2 = new DirectionalLight(0xffffff, 0.8);
+    directionalLight2.position.set(-20, 15, -10);
+    scene.add(directionalLight2);
+    
+    return () => {
+      // Cleanup - bileşen unmount olduğunda ışıkları kaldır
+      scene.remove(ambientLight);
+      scene.remove(directionalLight1);
+      scene.remove(directionalLight2);
+    };
+  }, [scene]);
+  
+  return null; // Bu bileşen görsel render etmez
+}
 
 // Hareket eden kutu bileşeni - fabrikada taşınan ürünleri temsil eder
 function HareketEdenKutu({
@@ -503,9 +531,7 @@ export default function FabrikaSimulasyonu() {
         style={{ background: "linear-gradient(to bottom, #87CEEB, #90EE90)" }}
       >
         {/* Gelişmiş ışıklandırma */}
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[20, 20, 10]} intensity={1.2} castShadow />
-        <directionalLight position={[-20, 15, -10]} intensity={0.8} />
+        <Lighting />
 
         {/* Büyük zemin */}
         <Box
